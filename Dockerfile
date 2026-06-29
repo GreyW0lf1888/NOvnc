@@ -3,7 +3,7 @@ ARG DISTRO_VARIANT=""
 
 # Pulls the official stable NGINX image
 FROM nginx:1.26.3-${DISTRO}${DISTRO_VARIANT}
-LABEL maintainer="Dave Conroy (github.com/tiredofit)"
+LABEL maintainer="Dave Conroy (://github.com)"
 
 ENV APP_USER=app \
     XDG_RUNTIME_DIR=/data \
@@ -13,37 +13,38 @@ ENV APP_USER=app \
     NGINX_WEBROOT=/usr/share/novnc \
     NGINX_WORKER_PROCESSES=1 \
     IMAGE_NAME=tiredofit/firefox \
-    IMAGE_REPO_URL=https://github.com
+    IMAGE_REPO_URL=https://://github.com/docker-firefox
 
 RUN set -x && \
-    addgroup -g 1000 ${APP_USER} && \
-    adduser -S -D -H -h /data -s /sbin/nologin -G ${APP_USER} -u 1000 ${APP_USER} && \
-    # Append the edge repository for specialized virtual display/vnc utilities
-    echo 'http://alpinelinux.org' >> /etc/apk/repositories && \
-    # Standard native alpine package update and upgrade
+    # Clean system upgrade using native repositories
     apk update && \
     apk upgrade && \
-    # Native package installation
+    # Create application user and group matching UID 1000
+    addgroup -g 1000 ${APP_USER} && \
+    adduser -S -D -H -h /data -s /sbin/nologin -G ${APP_USER} -u 1000 ${APP_USER} && \
+    # Install core utilities plus edge-testing tools cleanly in one execution layer
     apk add --no-cache \
-                            binutils \
-                            dbus \
-                            gcompat \
-                            git \
-                            openbox \
-                            novnc \
-                            websockify \
-                            xvfb \
-                            x11vnc \
-                            font-noto \
-                            font-noto-extra \
-                            terminus-font \
-                            ttf-dejavu \
-                            ttf-font-awesome \
-                            ttf-inconsolata \
-                            xeyes \
-                            && \
+        --repository=http://alpinelinux.org \
+        binutils \
+        dbus \
+        gcompat \
+        git \
+        openbox \
+        novnc \
+        websockify \
+        xvfb \
+        x11vnc \
+        font-noto \
+        font-noto-extra \
+        terminus-font \
+        ttf-dejavu \
+        ttf-font-awesome \
+        ttf-inconsolata \
+        xeyes \
+        && \
+    # Initialize workspace permissions securely
     mkdir -p /data && \
-    chown -R app:app /data
+    chown -R 1000:1000 /data
 
 EXPOSE 8080
 WORKDIR /data
