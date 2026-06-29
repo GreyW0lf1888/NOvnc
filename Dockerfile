@@ -1,10 +1,10 @@
-# Dynamic arguments to easily swap distributions or variants
+# Clear distribution and tag settings
 ARG DISTRO=alpine
-ARG DISTRO_VARIANT=3.24
+ARG DISTRO_VARIANT=""
 
-# Leverages the latest stable NGINX release on the selected Alpine version
+# Correctly pulls nginx:1.26.3-alpine (which uses the newest underlying Alpine version)
 FROM nginx:1.26.3-${DISTRO}${DISTRO_VARIANT}
-LABEL maintainer="Dave Conroy (github.com/tiredofit)"
+LABEL maintainer="Dave Conroy (://github.com)"
 
 ENV APP_USER=app \
     XDG_RUNTIME_DIR=/data \
@@ -14,14 +14,14 @@ ENV APP_USER=app \
     NGINX_WEBROOT=/usr/share/novnc \
     NGINX_WORKER_PROCESSES=1 \
     IMAGE_NAME=tiredofit/firefox \
-    IMAGE_REPO_URL=https://github.com/tiredofit/docker-firefox
+    IMAGE_REPO_URL=https://://github.com/docker-firefox
 
 RUN source /assets/functions/00-container && \
     set -x && \
     addgroup -g 1000 ${APP_USER} && \
     adduser -S -D -H -h /data -s /sbin/nologin -G ${APP_USER} -u 1000 ${APP_USER} && \
-    # Keeps edge/testing for cutting-edge packages like novnc or websockify if needed
-    echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
+    # Explicitly keep edge/testing repository for novnc/websockify compilation packages
+    echo 'http://alpinelinux.org' >> /etc/apk/repositories && \
     package update && \
     package upgrade && \
     package add .x-run-deps \
@@ -47,7 +47,7 @@ RUN source /assets/functions/00-container && \
                             xeyes \
                             && \
     mkdir -p /data && \
-    chown -R ${APP_USER}:${APP_USER} /data && \
+    chown -R ${APP_USER}:${APP_USER} && \
     package cleanup
 
 EXPOSE 8080
