@@ -1,10 +1,9 @@
-# Clear distribution and tag settings
 ARG DISTRO=alpine
 ARG DISTRO_VARIANT=""
 
-# Correctly pulls nginx:1.26.3-alpine (which uses the newest underlying Alpine version)
+# Pulls the official stable NGINX image
 FROM nginx:1.26.3-${DISTRO}${DISTRO_VARIANT}
-LABEL maintainer="Dave Conroy (://github.com)"
+LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ENV APP_USER=app \
     XDG_RUNTIME_DIR=/data \
@@ -14,17 +13,18 @@ ENV APP_USER=app \
     NGINX_WEBROOT=/usr/share/novnc \
     NGINX_WORKER_PROCESSES=1 \
     IMAGE_NAME=tiredofit/firefox \
-    IMAGE_REPO_URL=https://://github.com/docker-firefox
+    IMAGE_REPO_URL=https://github.com
 
-RUN source /assets/functions/00-container && \
-    set -x && \
+RUN set -x && \
     addgroup -g 1000 ${APP_USER} && \
     adduser -S -D -H -h /data -s /sbin/nologin -G ${APP_USER} -u 1000 ${APP_USER} && \
-    # Explicitly keep edge/testing repository for novnc/websockify compilation packages
+    # Append the edge repository for specialized virtual display/vnc utilities
     echo 'http://alpinelinux.org' >> /etc/apk/repositories && \
-    package update && \
-    package upgrade && \
-    package add .x-run-deps \
+    # Standard native alpine package update and upgrade
+    apk update && \
+    apk upgrade && \
+    # Native package installation
+    apk add --no-cache \
                             binutils \
                             dbus \
                             gcompat \
@@ -34,26 +34,16 @@ RUN source /assets/functions/00-container && \
                             websockify \
                             xvfb \
                             x11vnc \
-                            && \
-    package add .base-fonts \
                             font-noto \
                             font-noto-extra \
                             terminus-font \
                             ttf-dejavu \
                             ttf-font-awesome \
                             ttf-inconsolata \
-                            && \
-    package add -t .xeyes-run-deps \
-                            xeyes \
-                            && \
-
-    package add -t .xeyes-run-deps \
                             xeyes \
                             && \
     mkdir -p /data && \
-    chown -R app:app /data && \
-    package cleanup
-
+    chown -R app:app /data
 
 EXPOSE 8080
 WORKDIR /data
