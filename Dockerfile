@@ -1,7 +1,9 @@
+# Dynamic arguments to easily swap distributions or variants
 ARG DISTRO=alpine
-ARG DISTRO_VARIANT=edge
+ARG DISTRO_VARIANT=3.24
 
-FROM docker.io/tiredofit/nginx:alpine-3.19
+# Leverages the latest stable NGINX release on the selected Alpine version
+FROM nginx:1.26.3-${DISTRO}${DISTRO_VARIANT}
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ENV APP_USER=app \
@@ -16,10 +18,9 @@ ENV APP_USER=app \
 
 RUN source /assets/functions/00-container && \
     set -x && \
-    #sed -i "s|html htm shtml;|html htm shtml js;|g" /etc/nginx/mime.types && \
-    #sed -i "/application\/javascript .*js;/d" /etc/nginx/mime.types && \
     addgroup -g 1000 ${APP_USER} && \
     adduser -S -D -H -h /data -s /sbin/nologin -G ${APP_USER} -u 1000 ${APP_USER} && \
+    # Keeps edge/testing for cutting-edge packages like novnc or websockify if needed
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
     package update && \
     package upgrade && \
@@ -53,3 +54,4 @@ EXPOSE 8080
 WORKDIR /data
 
 COPY install/ /
+
