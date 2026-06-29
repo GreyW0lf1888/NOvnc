@@ -1,7 +1,7 @@
 ARG DISTRO=alpine
 ARG DISTRO_VARIANT=edge
 
-FROM docker.io/tiredofit/nginx:${DISTRO}-${DISTRO_VARIANT}
+FROM docker.io/tiredofit/nginx:alpine-3.19
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ENV APP_USER=app \
@@ -49,7 +49,7 @@ RUN source /assets/functions/00-container && \
     chown -R ${APP_USER}:${APP_USER} /data && \
     package cleanup
 
-EXPOSE 6080 5900
+EXPOSE 8080
 WORKDIR /data
 
 COPY install/ /
