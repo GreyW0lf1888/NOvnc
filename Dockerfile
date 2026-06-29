@@ -49,4 +49,3 @@ EXPOSE 8080
 WORKDIR /data
 
 COPY install/ /
-
