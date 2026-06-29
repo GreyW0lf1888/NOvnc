@@ -46,9 +46,14 @@ RUN source /assets/functions/00-container && \
     package add -t .xeyes-run-deps \
                             xeyes \
                             && \
+
+    package add -t .xeyes-run-deps \
+                            xeyes \
+                            && \
     mkdir -p /data && \
-    chown -R ${APP_USER}:${APP_USER} && \
+    chown -R app:app /data && \
     package cleanup
+
 
 EXPOSE 8080
 WORKDIR /data
